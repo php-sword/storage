@@ -1,0 +1,33 @@
+{
+    "name": "php-sword/storage",
+    "type": "library",
+    "keywords": ["php", "swoole", "sword", "storage"],
+    "homepage" : "https://github.com/php-sword",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Kyour",
+            "email": "kyour@vip.qq.com"
+        }
+    ],
+    "description": "The phpSword Component.",
+    "require": {
+        "php": "^7.0",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "aliyuncs/oss-sdk-php": "^2.4"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "files": [],
+        "psr-4": {
+            "Sword\\Storage": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sword\\Storage\\Tests\\": "tests/"
+        }
+    }
+}
