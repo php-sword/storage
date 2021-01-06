@@ -9,23 +9,25 @@
 
 namespace Sword\Storage\Drive;
 
-use Swoole\Coroutine\Http\Client;
-use Sword\Storage\StorageException;
-
 /**
- * Class ResApi
+ * Class Oss
  *
  * 文件对象储存OSS
  */
 
-class ResApi implements DriveInterface
+use Sword\Storage\StorageException;
+
+class Local implements DriveInterface
 {
     //配置信息
-    private $config;
+    private $config = [
+        'public' => './Public', //EASYSWOOLE_ROOT. '/Public/'
+    ];
 
     public function __construct(array $config = [])
     {
-        $this->config = $config;
+        if($config)
+            $this->config = $config;
     }
 
     /**
@@ -37,24 +39,22 @@ class ResApi implements DriveInterface
      */
     public function upload(string $file, string $target, bool $delSource = false)
     {
+        // TODO: Implement upload() method.
         try{
-            //开始上传文件
-            $cli = new Client($this->config['Host'], $this->config['Port']);
-            $cli->setHeaders([
-                'Host' => $this->config['Host']
-            ]);
-            $cli->set(['timeout' => $this->config['OutTime']]);
-            $cli->addFile($file, 'file');
-            $cli->post($this->config['Gateway'], [
-                'Path' => $target,
-                'User' => $this->config['User'],
-                'Secret' => $this->config['Secret'],
-                'Action' => 'upload'
-            ]);
-//            echo $cli->body;
-            $cli->close();
+            $index = strrpos($target, '/');
 
-            //删除源文件
+            //保存到Public目录下
+            $dir = $this->config['public'] . substr($target, 0, $index);
+
+            //文件夹创建
+            if (!file_exists($dir)){
+                mkdir($dir,0777,true);
+            }
+            $to = $dir.'/'.substr($target, $index +1);
+            if(copy($file, $to)){
+                throw new StorageException(__CLASS__ . ': Copy fail. '.$file. '>' .$to);
+            }
+
             $delSource && unlink($file);
         } catch(\Throwable $e) {
             throw new StorageException(__CLASS__ . ':'.$e->getMessage());
@@ -68,23 +68,10 @@ class ResApi implements DriveInterface
      */
     public function delete(string $target)
     {
+        // TODO: Implement delete() method.
         try{
-            $cli = new Client($this->config['Host'], $this->config['Port']);
-            $cli->setHeaders([
-                'Host' => $this->config['Host']
-            ]);
-            $cli->set(['timeout' => 5]);
-            $cli->post('/api.php', [
-                'Path' => $target,
-                'User' => $this->config['User'],
-                'Secret' => $this->config['Secret'],
-                'Action' => 'delete'
-            ]);
-//            echo $cli->body;
-            $cli->close();
-
+            unlink($target);
         } catch(\Throwable $e) {
-            //返回报错
             throw new StorageException(__CLASS__ . ':'.$e->getMessage());
         }
     }
@@ -99,4 +86,5 @@ class ResApi implements DriveInterface
     {
         // TODO: Implement download() method.
     }
+
 }

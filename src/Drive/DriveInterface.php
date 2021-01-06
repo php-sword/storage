@@ -9,6 +9,7 @@
 
 namespace Sword\Storage\Drive;
 
+use Sword\Storage\StorageException;
 
 /**
  * Class DriveInterface
@@ -20,17 +21,25 @@ interface DriveInterface
     /**
      * 上传文件
      * @param $file string 本地文件地址
-     * @param $path string 保存路径(包含文件名)
+     * @param $target string 保存路径(包含文件名)
      * @param $delSource bool 是否删除源文件
-     * @return array
+     * @throws StorageException
      */
-    public function upload(string $file, string $path, bool $delSource = false) :array;
+    public function upload(string $file, string $target, bool $delSource = false);
 
     /**
      * 删除文件
-     * @param $path string 保存路径(包含文件名)
-     * @return array
+     * @param $target string 保存路径(包含文件名)
+     * @throws StorageException
      */
-    public function delete(string $path) :array;
+    public function delete(string $target);
+
+    /**
+     * 下载
+     * @param $target string 远程路径(包含文件名)
+     * @param $file string 本地路径(包含文件名)
+     * @throws StorageException
+     */
+    public function download(string $target, string $file);
 
 }

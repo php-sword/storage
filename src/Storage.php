@@ -9,7 +9,9 @@
 
 namespace Sword\Storage;
 
-use Sword\Storage\Drive\Oss;
+//use Sword\Storage\Drive\Ftp;
+use Sword\Storage\Drive\Local;
+use Sword\Storage\Drive\AliOss;
 use Sword\Storage\Drive\ResApi;
 
 /**
@@ -17,20 +19,38 @@ use Sword\Storage\Drive\ResApi;
  *
  * 文件对象储存OSS
  * 使用方法：
- *      $storage = Sword\Storage\Storage::getInstance();
- *      $storage->upload()
+ *      Storage::getInstance($config);
+ *
+ *      $storage = Storage::getInstance()->getObject();
+ *      $storage->upload(...);
  */
 
 class Storage
 {
-    use StorageSingleton;
+    /**
+     * 单例对象
+     * @var Storage
+     */
+    private static $instance;
 
-    // 储存方式 --默认本地
-    private $drive = 'local';
-    // 实例
+    /**
+     * 储存方式 --默认本地
+     * @var string
+     */
+    private $drive;
+
+    /**
+     * 实例对象
+     * @var Local|AliOss|ResApi
+     */
     private $object;
-    // 配置信息
+
+    /**
+     * 配置信息
+     * @var array|string[]
+     */
     private $config = [
+        'drive' => 'local',
         'public' => './Public', //EASYSWOOLE_ROOT. '/Public/'
     ];
 
@@ -38,54 +58,63 @@ class Storage
     {
         if($config)
             $this->config = $config;
+
+        //默认驱动
+        $this->drive = $this->config['drive'];
+
+        if(!isset($this->config['dev_'.$this->drive])){
+            throw new StorageException(__CLASS__ . ': Configuration information does not exist: dev_'.$this->drive);
+        }
+
+        $dev_config = $this->config['dev_'.$this->drive];
+
+        //实例化驱动
+        switch ($this->drive){
+            case "local":
+                $this->object = new Local($dev_config);
+                break;
+            case "alioss":
+                $this->object = new AliOss($dev_config);
+                break;
+            case "api":
+                $this->object = new ResApi($dev_config);
+                break;
+//            case "ftp":
+//                $this->object = new Ftp($config);
+//                break;
+        }
+
+        if($config)
+            $this->config = $config;
     }
 
     /**
-     * 资源文件保存
-     * @param string $file 临时文件路径
-     * @param string $target 目标路径
-     * @param string|null $type 储存类型 local|oss
-     * @return array
+     * 获取实例
+     * @return Local|AliOss|ResApi
      */
-    public function upload(string $file, string $target, $type = null): array
+    public function getObject()
     {
-        switch ($this->drive) {
-            case 'local': //本地储存
-                $index = strrpos($target, '/');
+        return $this->object;
+    }
 
-                //保存到Public目录下
-                $dir = $this->config['public'].substr($target, 0, $index);
-                //文件夹创建
-                if (!file_exists($dir)){
-                    mkdir($dir,0777,true);
-                }
-                if(copy($file, $dir.'/'.substr($target, $index +1))){
-                    return [null, true];
-                }
-                return ['fail', false];
-            case 'oss': //阿里对象储存
-                $oss = new Oss();
-                return $oss->upload($file, $target);
-//            case 'ftp': //FTP服务器
-//                $ftp = new FtpClient();
-//                return $ftp->upload($file, $target);
-            case 'api': //文件服务器接口
-                $oss = new ResApi();
-                return $oss->upload($file, $target);
-            default:
-                break;
+    /**
+     * @return Storage
+     */
+    public static function getInstance(): Storage
+    {
+        return self::$instance;
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return Storage
+     * @throws StorageException
+     */
+    public static function setInstance(...$args): Storage
+    {
+        if(!isset(self::$instance)){
+            self::$instance = new static(...$args);
         }
-        return ['fail', false];
+        return self::$instance;
     }
-
-    public function delete()
-    {
-
-    }
-
-    public function download()
-    {
-
-    }
-
 }

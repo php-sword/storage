@@ -9,23 +9,41 @@
 
 namespace Sword\Storage\Drive;
 
-use Swoole\Coroutine\Http\Client;
-use Sword\Storage\StorageException;
-
 /**
- * Class ResApi
+ * Class Oss
  *
  * 文件对象储存OSS
  */
 
-class ResApi implements DriveInterface
+use OSS\OssClient;
+use OSS\Core\OssException;
+use Sword\Storage\StorageException;
+
+class AliOss implements DriveInterface
 {
     //配置信息
     private $config;
 
+    //连接客户端对象
+    private $client;
+
     public function __construct(array $config = [])
     {
         $this->config = $config;
+    }
+
+    /**
+     * 连接客户端
+     * @return OssClient
+     * @throws OssException
+     */
+    private function conn(): OssClient
+    {
+        if($this->client == null){
+            $this->client = new OssClient($this->config['AccessKey'],
+                $this->config['Secret'], $this->config['Endpoint']);
+        }
+        return $this->client;
     }
 
     /**
@@ -38,25 +56,15 @@ class ResApi implements DriveInterface
     public function upload(string $file, string $target, bool $delSource = false)
     {
         try{
+            //连接云端
+            $client = $this->conn();
+
             //开始上传文件
-            $cli = new Client($this->config['Host'], $this->config['Port']);
-            $cli->setHeaders([
-                'Host' => $this->config['Host']
-            ]);
-            $cli->set(['timeout' => $this->config['OutTime']]);
-            $cli->addFile($file, 'file');
-            $cli->post($this->config['Gateway'], [
-                'Path' => $target,
-                'User' => $this->config['User'],
-                'Secret' => $this->config['Secret'],
-                'Action' => 'upload'
-            ]);
-//            echo $cli->body;
-            $cli->close();
+            $client->uploadFile($this->config['Bucket'], $target, $file);
 
             //删除源文件
             $delSource && unlink($file);
-        } catch(\Throwable $e) {
+        } catch(OssException $e) {
             throw new StorageException(__CLASS__ . ':'.$e->getMessage());
         }
     }
@@ -69,23 +77,12 @@ class ResApi implements DriveInterface
     public function delete(string $target)
     {
         try{
-            $cli = new Client($this->config['Host'], $this->config['Port']);
-            $cli->setHeaders([
-                'Host' => $this->config['Host']
-            ]);
-            $cli->set(['timeout' => 5]);
-            $cli->post('/api.php', [
-                'Path' => $target,
-                'User' => $this->config['User'],
-                'Secret' => $this->config['Secret'],
-                'Action' => 'delete'
-            ]);
-//            echo $cli->body;
-            $cli->close();
+            //连接云端
+            $client = $this->conn();
 
-        } catch(\Throwable $e) {
-            //返回报错
-            throw new StorageException(__CLASS__ . ':'.$e->getMessage());
+            $client->deleteObject($this->config['Bucket'], $target);
+        } catch(OssException $e) {
+            throw new StorageException(__CLASS__ . ':'.$e->getErrorMessage());
         }
     }
 

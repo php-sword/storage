@@ -1,8 +1,6 @@
 PHP-Sword Storage 0.0.1
 ===============
 
-[![Latest Stable Version](https://poser.pugx.org/php-sword/sword/v)](//packagist.org/packages/php-sword/sword) [![Total Downloads](https://poser.pugx.org/php-sword/sword/downloads)](//packagist.org/packages/php-sword/sword) [![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-8892BF.svg)](http://www.php.net/) [![License](https://poser.pugx.org/php-sword/sword/license)](//packagist.org/packages/php-sword/sword)
-
 > 多种方式的对象储存管理封装组件包，支持本地、Oss、PHP-Api方式自由切换。
 
 ## 主要特性
@@ -19,7 +17,53 @@ composer require php-sword/storage
 
 ## 文档
 
-开发文档: [http://sword.kyour.cn/doc](http://sword.kyour.cn/doc)
+单例注册
+```php
+Storage::getInstance($config);
+```
+
+配置信息
+```php
+$config = [
+
+    //资源储存方式 local|alioss|api
+    'drive' => 'api',
+
+    //资源api服务器接口配置 -若res_type=local生效
+    'dev_local' => [
+        // 资源目录路径 以/结尾
+        'public' => EASYSWOOLE_ROOT. '/Public/'
+    ],
+
+    //资源api服务器接口配置 -若res_type=api生效
+    // 接口服务端代码：https://github.com/php-sword/storage/blob/main/tests/api.php
+    'dev_api' => [
+        'Host' => 'ac.youhost.cn',
+        'Port' => 80,
+        'Gateway' => '/api.php',
+        'User' => 'xoshe',
+        'Secret' => '***',
+        'OutTime' => -1
+    ],
+
+    // 阿里oss配置 -若res_type=alioss生效
+    'dev_alioss' => [
+        'AccessKey'   => 'LTA***sZh',
+        'Secret'      => 'NSc38*****fn7z5',
+        'Endpoint'    => "http://oss-cn-chengdu.aliyuncs.com",
+        'Bucket'      => '***'
+    ],
+];
+```
+
+使用
+```php
+$storage = Storage::getInstance()->getObject();
+$storage->upload(...);
+```
+
+若是采用api方式：
+接口服务端代码：https://github.com/php-sword/storage/blob/main/tests/api.php
 
 ## 参与开发
 
