@@ -22,7 +22,7 @@
     "autoload": {
         "files": [],
         "psr-4": {
-            "Sword\\Storage": "src/"
+            "Sword\\Storage\\": "src/"
         }
     },
     "autoload-dev": {
