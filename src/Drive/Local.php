@@ -51,7 +51,7 @@ class Local implements DriveInterface
                 mkdir($dir,0777,true);
             }
             $to = $dir.'/'.substr($target, $index +1);
-            if(copy($file, $to)){
+            if(!copy($file, $to)){
                 throw new StorageException(__CLASS__ . ': Copy fail. '.$file. '>' .$to);
             }
 

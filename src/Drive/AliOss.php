@@ -13,6 +13,7 @@ namespace Sword\Storage\Drive;
  * Class Oss
  *
  * 文件对象储存OSS
+ * 使用该驱动请require "aliyuncs/oss-sdk-php": "^2.4"
  */
 
 use OSS\OssClient;

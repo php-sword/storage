@@ -1,4 +1,4 @@
-PHP-Sword Storage 0.0.1
+PHP-Sword Storage 0.1.0
 ===============
 
 > 多种方式的对象储存管理封装组件包，支持本地、Oss、PHP-Api方式自由切换。
@@ -17,7 +17,7 @@ composer require php-sword/storage
 
 ## 文档
 
-单例注册
+全局单例注册
 ```php
 Storage::getInstance($config);
 ```
