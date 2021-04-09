@@ -70,7 +70,7 @@ class Local implements DriveInterface
     {
         // TODO: Implement delete() method.
         try{
-            unlink($target);
+            unlink($this->config['public'] . $target);
         } catch(\Throwable $e) {
             throw new StorageException(__CLASS__ . ':'.$e->getMessage());
         }
