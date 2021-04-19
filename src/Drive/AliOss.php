@@ -10,14 +10,13 @@
 namespace Sword\Storage\Drive;
 
 /**
- * Class Oss
+ * Class AliOss
  *
  * 文件对象储存OSS
- * 使用该驱动请require "aliyuncs/oss-sdk-php": "^2.4"
+ * 使用该驱动请require "easyswoole/oss": "^1.1"
  */
 
-use OSS\OssClient;
-use OSS\Core\OssException;
+use EasySwoole\Oss\AliYun\OssClient;
 use Sword\Storage\StorageException;
 
 class AliOss implements DriveInterface
@@ -36,13 +35,16 @@ class AliOss implements DriveInterface
     /**
      * 连接客户端
      * @return OssClient
-     * @throws OssException
      */
     private function conn(): OssClient
     {
-        if($this->client == null){
-            $this->client = new OssClient($this->config['AccessKey'],
-                $this->config['Secret'], $this->config['Endpoint']);
+        if($this->client == null) {
+            $config = new \EasySwoole\Oss\AliYun\Config([
+                'accessKeyId' => $this->config['AccessKey'],
+                'accessKeySecret' => $this->config['Secret'],
+                'endpoint' => $this->config['Endpoint']
+            ]);
+            $this->client = new \EasySwoole\Oss\AliYun\OssClient($config);
         }
         return $this->client;
     }
@@ -65,7 +67,7 @@ class AliOss implements DriveInterface
 
             //删除源文件
             $delSource && unlink($file);
-        } catch(OssException $e) {
+        } catch(\Throwable $e) {
             throw new StorageException(__CLASS__ . ':'.$e->getMessage());
         }
     }
@@ -82,8 +84,8 @@ class AliOss implements DriveInterface
             $client = $this->conn();
 
             $client->deleteObject($this->config['Bucket'], $target);
-        } catch(OssException $e) {
-            throw new StorageException(__CLASS__ . ':'.$e->getErrorMessage());
+        } catch(\Throwable $e) {
+            throw new StorageException(__CLASS__ . ':'.$e->getMessage());
         }
     }
 

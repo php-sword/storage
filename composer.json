@@ -15,6 +15,7 @@
         "php": ">=7.0"
     },
     "require-dev": {
+        "easyswoole/oss": "^1.1"
     },
     "autoload": {
         "files": [],
