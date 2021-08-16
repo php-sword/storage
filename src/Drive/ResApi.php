@@ -51,11 +51,15 @@ class ResApi implements DriveInterface
                 'Secret' => $this->config['Secret'],
                 'Action' => 'upload'
             ]);
-//            echo $cli->body;
-            $cli->close();
 
             //删除源文件
             $delSource && unlink($file);
+
+            $cli->close();
+            if($cli->getStatusCode() != 200){
+                throw new StorageException(__CLASS__ . ': Interface request exception.');
+            }
+            //echo $cli->body;
         } catch(\Throwable $e) {
             throw new StorageException(__CLASS__ . ':'.$e->getMessage());
         }
